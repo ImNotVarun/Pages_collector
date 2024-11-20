@@ -184,10 +184,11 @@ export function LinkCard({
           className={`h-32 bg-gradient-to-br ${link.gradient} group-hover:opacity-90 transition-opacity`}
         />
         <div className="p-6">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-lg font-semibold text-gray-900 truncate group-hover:text-blue-600 transition-colors">
-              {link.title}
-            </h3>
+          <h3 className="text-lg font-semibold text-gray-900 truncate group-hover:text-blue-600 transition-colors mb-4">
+            {link.title}
+          </h3>
+          <p className="text-sm text-gray-500 truncate mb-4">{link.url}</p>
+          <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               {fileCount > 0 && (
                 <button
@@ -225,7 +226,6 @@ export function LinkCard({
               </a>
             </div>
           </div>
-          <p className="text-sm text-gray-500 truncate">{link.url}</p>
         </div>
       </div>
 
