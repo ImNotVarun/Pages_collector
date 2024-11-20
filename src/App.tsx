@@ -4,7 +4,8 @@ import { Toaster } from "react-hot-toast";
 import { supabase } from "./lib/supabase";
 import { AddLinkModal } from "./components/AddLinkModal";
 import { LinkCard } from "./components/LinkCard";
-import { NotionLink } from "./types";
+import { NotionLink } from "./types"
+import { Github } from "lucide-react";
 
 function App() {
   const [links, setLinks] = useState<NotionLink[]>([]);
@@ -48,17 +49,19 @@ function App() {
           <h1 className="text-4xl font-bold text-gray-900 mb-6 text-center">
             Notion Links
           </h1>
-          <h5 className="text-1xl font-bold mb-6 text-right">
+          <h5 className="text-1xl font-bold mb-6 text-right flex items-center justify-end">
   Made by{" "}
   <a
     href="https://github.com/ImNotVarun/Pages_collector.git"
-    className="text-red-500 hover:underline"
+    className="text-red-500 hover:underline ml-2 flex items-center"
     target="_blank"
     rel="noopener noreferrer"
   >
     NOT_VARUN
+    <Github size={20} className="ml-2 text-gray-600 hover:text-red-500" />
   </a>
 </h5>
+
 
           <div className="relative max-w-2xl mx-auto">
             <Search
