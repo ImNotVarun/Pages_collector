@@ -48,9 +48,18 @@ function App() {
           <h1 className="text-4xl font-bold text-gray-900 mb-6 text-center">
             Notion Links
           </h1>
-          <h5 className="text-1xl font-bold text-gray-900 mb-6 text-right">
-            Made by NOT_VARUN
-          </h5>
+          <h5 className="text-1xl font-bold mb-6 text-right">
+  Made by{" "}
+  <a
+    href="https://github.com/ImNotVarun/Pages_collector.git"
+    className="text-red-500 hover:underline"
+    target="_blank"
+    rel="noopener noreferrer"
+  >
+    NOT_VARUN
+  </a>
+</h5>
+
           <div className="relative max-w-2xl mx-auto">
             <Search
               className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
