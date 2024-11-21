@@ -1,10 +1,134 @@
-import React, { useState, useEffect } from "react";
-import { ExternalLink, Paperclip, Plus, Pencil } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import {
+  ExternalLink,
+  FileText,
+  Plus,
+  Paperclip,
+  X,
+  Download,
+  Image as ImageIcon,
+} from "lucide-react";
 import { NotionLink, NotionFile } from "../types";
 import { FileUploadModal } from "./FileUploadModal";
-import { EditLinkModal } from "./EditLinkModal";
-import { LinkCardDetailsModal } from "./LinkCardDetaileModel";
 import { supabase } from "../lib/supabase";
+
+interface LinkCardDetailsModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  link: NotionLink;
+  files: NotionFile[];
+}
+
+function LinkCardDetailsModal({
+  isOpen,
+  onClose,
+  link,
+  files,
+}: LinkCardDetailsModalProps) {
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        modalRef.current &&
+        !modalRef.current.contains(event.target as Node)
+      ) {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div
+        ref={modalRef}
+        className="bg-white rounded-2xl p-6 w-full max-w-md relative shadow-xl"
+      >
+        <button
+          onClick={onClose}
+          className="absolute top-7 right-7 text-red-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 p-1 rounded-full transition-all duration-200"
+        >
+          <X size={20} />
+        </button>
+
+        <div
+          className={`h-32 bg-gradient-to-br ${link.gradient} rounded-t-xl mb-6`}
+        />
+
+        <h2 className="text-2xl font-bold mb-4 text-gray-900">{link.title}</h2>
+
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Link
+          </label>
+          <div className="flex items-center space-x-2">
+            <a
+              href={link.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:underline truncate flex-grow"
+            >
+              {link.url}
+            </a>
+            <a
+              href={link.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-500 hover:text-gray-700"
+            >
+              <ExternalLink size={18} />
+            </a>
+          </div>
+        </div>
+
+        {files.length > 0 && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Attached Files ({files.length})
+            </label>
+            <div className="space-y-2">
+              {files.map((file) => (
+                <div
+                  key={file.id}
+                  className="flex items-center justify-between border-b pb-2 last:border-b-0"
+                >
+                  <div className="flex items-center space-x-3">
+                    {file.type === "pdf" ? (
+                      <FileText size={24} className="text-red-500" />
+                    ) : (
+                      <ImageIcon size={24} className="text-blue-500" />
+                    )}
+                    <span className="text-sm font-medium truncate max-w-[200px]">
+                      {file.name}
+                    </span>
+                  </div>
+                  <a
+                    href={file.url}
+                    download
+                    className="text-blue-500 hover:text-blue-600"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Download size={20} />
+                  </a>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export function LinkCard({
   link,
@@ -14,14 +138,25 @@ export function LinkCard({
   onUpdate: () => void;
 }) {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
-  const [fileCount, setFileCount] = useState(0);
   const [files, setFiles] = useState<NotionFile[]>([]);
+  const [fileCount, setFileCount] = useState(0);
 
-  const screenshotUrl = `https://api.screenshotmachine.com?key=a8463f&url=${encodeURIComponent(
-    link.url
-  )}&dimension=1024x768&device=desktop&format=png&delay=5000`;
+  const fetchFiles = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("notion_files")
+        .select("*")
+        .eq("link_id", link.id)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setFiles(data || []);
+      setFileCount(data?.length || 0);
+    } catch (error) {
+      console.error("Error fetching files:", error);
+    }
+  };
 
   useEffect(() => {
     const getFileCount = async () => {
@@ -34,21 +169,6 @@ export function LinkCard({
     getFileCount();
   }, [link.id]);
 
-  const fetchFiles = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("notion_files")
-        .select("*")
-        .eq("link_id", link.id)
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-      setFiles(data || []);
-    } catch (error) {
-      console.error("Error fetching files:", error);
-    }
-  };
-
   const handleCardClick = async () => {
     await fetchFiles();
     setIsDetailsModalOpen(true);
@@ -58,15 +178,11 @@ export function LinkCard({
     <>
       <div
         onClick={handleCardClick}
-        className="group bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden cursor-pointer relative"
+        className="group bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden cursor-pointer"
       >
-        <div className="h-32 bg-gray-200 relative overflow-hidden">
-          <img
-            src={screenshotUrl}
-            alt={link.title}
-            className="w-full h-full object-cover"
-          />
-        </div>
+        <div
+          className={`h-32 bg-gradient-to-br ${link.gradient} group-hover:opacity-90 transition-opacity`}
+        />
         <div className="p-6">
           <h3 className="text-lg font-semibold text-gray-900 truncate group-hover:text-blue-600 transition-colors mb-4">
             {link.title}
@@ -78,7 +194,8 @@ export function LinkCard({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleCardClick();
+                    fetchFiles();
+                    setIsDetailsModalOpen(true);
                   }}
                   className="text-gray-400 hover:text-gray-600 transition-colors flex items-center"
                   title="View attachments"
@@ -110,30 +227,16 @@ export function LinkCard({
             </div>
           </div>
         </div>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsEditModalOpen(true);
-          }}
-          className="absolute top-2 left-2 bg-white p-2 rounded-full shadow-md text-gray-600 hover:text-blue-600 transition-colors"
-          title="Edit link"
-        >
-          <Pencil size={16} />
-        </button>
       </div>
 
       <FileUploadModal
         isOpen={isUploadModalOpen}
         onClose={() => setIsUploadModalOpen(false)}
         linkId={link.id}
-        onFileUploaded={onUpdate}
-      />
-
-      <EditLinkModal
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        link={link}
-        onUpdate={onUpdate}
+        onFileUploaded={() => {
+          onUpdate();
+          fetchFiles();
+        }}
       />
 
       <LinkCardDetailsModal
@@ -141,7 +244,6 @@ export function LinkCard({
         onClose={() => setIsDetailsModalOpen(false)}
         link={link}
         files={files}
-        screenshotUrl={screenshotUrl}
       />
     </>
   );
