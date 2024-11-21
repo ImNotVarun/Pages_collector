@@ -7,9 +7,11 @@ import {
   X,
   Download,
   Image as ImageIcon,
+  Pencil,
 } from "lucide-react";
 import { NotionLink, NotionFile } from "../types";
 import { FileUploadModal } from "./FileUploadModal";
+import { EditLinkModal } from "./EditLinkModal";
 import { supabase } from "../lib/supabase";
 
 interface LinkCardDetailsModalProps {
@@ -17,6 +19,7 @@ interface LinkCardDetailsModalProps {
   onClose: () => void;
   link: NotionLink;
   files: NotionFile[];
+  onEdit: () => void;
 }
 
 function LinkCardDetailsModal({
@@ -24,6 +27,7 @@ function LinkCardDetailsModal({
   onClose,
   link,
   files,
+  onEdit,
 }: LinkCardDetailsModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -53,12 +57,21 @@ function LinkCardDetailsModal({
         ref={modalRef}
         className="bg-white rounded-2xl p-6 w-full max-w-md relative shadow-xl"
       >
-        <button
-          onClick={onClose}
-          className="absolute top-7 right-7 text-red-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 p-1 rounded-full transition-all duration-200"
-        >
-          <X size={20} />
-        </button>
+        <div className="flex justify-between items-center mb-4">
+          <button
+            onClick={onEdit}
+            className="bg-gray-100 hover:bg-gray-200 p-2 rounded-full transition-all duration-200"
+            title="Edit link"
+          >
+            <Pencil size={16} className="text-gray-600" />
+          </button>
+          <button
+            onClick={onClose}
+            className="text-red-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 p-1 rounded-full transition-all duration-200"
+          >
+            <X size={20} />
+          </button>
+        </div>
 
         <div
           className={`h-32 bg-gradient-to-br ${link.gradient} rounded-t-xl mb-6`}
@@ -139,6 +152,7 @@ export function LinkCard({
 }) {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [files, setFiles] = useState<NotionFile[]>([]);
   const [fileCount, setFileCount] = useState(0);
 
@@ -178,7 +192,7 @@ export function LinkCard({
     <>
       <div
         onClick={handleCardClick}
-        className="group bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden cursor-pointer"
+        className="group bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden cursor-pointer relative"
       >
         <div
           className={`h-32 bg-gradient-to-br ${link.gradient} group-hover:opacity-90 transition-opacity`}
@@ -244,6 +258,17 @@ export function LinkCard({
         onClose={() => setIsDetailsModalOpen(false)}
         link={link}
         files={files}
+        onEdit={() => {
+          setIsDetailsModalOpen(false);
+          setIsEditModalOpen(true);
+        }}
+      />
+
+      <EditLinkModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        link={link}
+        onUpdate={onUpdate}
       />
     </>
   );
