@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Plus, Search, Loader2 } from "lucide-react";
+import { Plus, Search, Loader2, Github } from "lucide-react";
 import { Toaster } from "react-hot-toast";
+import { Analytics } from "@vercel/analytics/react";
 import { supabase } from "./lib/supabase";
 import { AddLinkModal } from "./components/AddLinkModal";
 import { LinkCard } from "./components/LinkCard";
-import { NotionLink } from "./types"
-import { Github } from "lucide-react";
+import { NotionLink } from "./types";
 
 function App() {
   const [links, setLinks] = useState<NotionLink[]>([]);
@@ -42,26 +42,28 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <Analytics /> {/* Added Vercel Analytics */}
       <Toaster position="top-right" />
-
       <div className="max-w-7xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
         <div className="mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-6 text-center">
             Notion Links
           </h1>
           <h5 className="text-1xl font-bold mb-6 text-right flex items-center justify-end">
-  Made by{" "}
-  <a
-    href="https://github.com/ImNotVarun/Pages_collector.git"
-    className="text-red-500 hover:underline ml-2 flex items-center"
-    target="_blank"
-    rel="noopener noreferrer"
-  >
-    NOT_VARUN
-    <Github size={20} className="ml-2 text-gray-600 hover:text-red-500" />
-  </a>
-</h5>
-
+            Made by{" "}
+            <a
+              href="https://github.com/ImNotVarun/Pages_collector.git"
+              className="text-red-500 hover:underline ml-2 flex items-center"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              NOT_VARUN
+              <Github
+                size={20}
+                className="ml-2 text-gray-600 hover:text-red-500"
+              />
+            </a>
+          </h5>
 
           <div className="relative max-w-2xl mx-auto">
             <Search
