@@ -51,7 +51,7 @@ function App() {
         <div className="max-w-7xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
           <div className="mb-12">
             <h1 className="text-4xl font-bold text-gray-900 mb-6 text-center">
-              Notion Links
+              Pages_Collector
             </h1>
             <h5 className="text-1xl font-bold mb-6 text-right flex items-center justify-end">
               Made by{" "}
